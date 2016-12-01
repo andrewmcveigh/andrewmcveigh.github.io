@@ -1,0 +1,787 @@
+#+OPTIONS: num:nil toc:nil
+#+REVEAL_THEME: night
+#+REVEAL_TRANS: concave
+#+REVEAL_MARGIN: 0
+#+REVEAL_HLEVEL: 2
+#+REVEAL_EXTRA_CSS: ./css/override.css
+#+REVEAL_EXTRA_JS: { src: 'file:///home/andrewmcveigh/notes/speculative-development/js/override.js' }
+#+STARTUP: showeverything
+#+AUTHOR: Andrew Mcveigh
+#+TITLE: Speculative Development
+
+* Repeating stuff hurts
+  #+BEGIN_NOTES
+  - repeating stuff hurts
+  - always have to repeat things, slightly different
+  - Splitting -> specialised services = flexibility
+  - lots different APIs, different datastructures
+  - ds = same/similar information, different versions
+  - work, maintain compatibility
+  #+END_NOTES
+* Leverage
+  :PROPERTIES:
+  :reveal_background: ./images/leverage.jpg
+  :END:
+# https://commons.wikimedia.org/wiki/File:Crowbar_without_haft.jpg
+  #+BEGIN_NOTES
+  - c.s. is a tool to prevent mistakes when repeating
+  - Spent time & effort describing
+  - Leverage
+  - C.S gives leverage, want more
+  - Stop repeating ourselves so much
+  #+END_NOTES
+* Why would you use Clojure Spec?
+  #+ATTR_REVEAL: :frag (appear)
+  - Data validation
+  - Generative testing
+  - Richer documentation
+  - Parsing
+  #+BEGIN_NOTES
+  - similar space prismatic schema
+  - concerns: data validation, gen testing
+  - designed to enable richer docs
+  - clojure code parsing with same language
+  #+END_NOTES
+* An example
+  #+BEGIN_SRC clojure
+  (s/def ::fuel #{"electricity" "gas"})
+  (s/def ::variant string?)
+  (s/def :energy/meter (s/keys :req-un [::fuel ::variant]))
+  #+END_SRC
+  #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure
+  => (s/valid? :energy/meter {:fuel "electricity" :variant "Economy 7"})
+  true
+
+  => (s/valid? :energy/meter ["cheese" "milk" "yoghurt"])
+  false
+  #+END_SRC
+  #+BEGIN_NOTES
+  - Want to check the thing that you have is an energy meter
+  - rather than a vector of dairy products
+  - not selling clojure spec
+  - more about extra value you can get from detailed specs
+  #+END_NOTES
+
+* What is a Spec?
+  #+ATTR_REVEAL: :frag (appear)
+  - clojure.core predicate function
+  - arbitrary function
+  - set of values
+  #+BEGIN_NOTES
+  - Clojure value
+  - predicate function from clojure core
+  - arbitrary function
+  - set of values
+  #+END_NOTES
+
+* Naming
+  #+BEGIN_SRC clojure
+  => (require '[clojure.spec :as s])
+
+  => (s/def :uk.energy.meter/fuel #{"electricity" "gas"})
+  :uk.energy.meter/fuel
+  #+END_SRC
+  #+BEGIN_NOTES
+  - Combine/compose
+  - global registry - def
+  - specs named with keyword
+  #+END_NOTES
+
+* It's All Protocols
+#+BEGIN_SRC clojure
+(defprotocol Spec
+  (conform*  [spec x])
+  (unform*   [spec y])
+  (explain*  [spec path via in x])
+  (gen*      [spec overrides path rmap])
+  (with-gen* [spec gfn])
+  (describe* [spec]))
+#+END_SRC
+  #+BEGIN_NOTES
+  - Bottom = Spec protocol
+  - higher level functions mirror protocol
+  #+END_NOTES
+
+* Conform
+  #+BEGIN_SRC clojure
+  => (s/conform :uk.energy.meter/fuel "electricity")
+  "electricity"
+
+  => (s/conform (s/or :fuel :uk.energy.meter/fuel :nil nil?) "electricity")
+  [:fuel "electricity"]
+
+  => (s/conform :uk.energy.meter/fuel 42)
+  :clojure.spec/invalid
+
+  => (s/valid? :uk.energy.meter/fuel "gas")
+  true
+  #+END_SRC
+  #+BEGIN_NOTES
+  - data looks like spec?
+  - returns conformed data
+  - destructuring, or/regex spec
+  - each spec, rules of conformity
+  - child specs
+  #+END_NOTES
+
+* Unform
+  #+BEGIN_SRC clojure
+  => (s/unform (s/or :fuel :uk.energy.meter/fuel :nil nil?) [:fuel "electricity"])
+  "electricity"
+  #+END_SRC
+  #+BEGIN_NOTES
+  - Removes destructuring
+  #+END_NOTES
+
+* Explain
+  #+BEGIN_SRC clojure
+  => (s/explain :uk.energy.meter/fuel #{"something-else"})
+  val:             #{"something-else"}
+  fails spec:      :uk.energy.meter/fuel
+        predicate: #{"gas" "electricity"}
+  nil
+  #+END_SRC
+  #+BEGIN_NOTES
+  - Spec & invalid, how fail?
+  #+END_NOTES
+
+* Gen
+  #+BEGIN_SRC clojure
+  => (s/gen :uk.energy.meter/fuel)
+  #c.t.c.g.Generator{:gen #function[c.t.c.generators/such-that/fn--21637]} 
+
+  => (require '[clojure.spec.gen :as gen])
+
+  => (gen/generate (s/gen :uk.energy.meter/fuel))
+  "gas"
+  #+END_SRC
+  #+BEGIN_NOTES
+  - Returns a gen for spec
+  #+END_NOTES
+
+* With-gen
+  #+BEGIN_SRC clojure
+  => (s/with-gen string? #(s/gen #{"string-a" "string-b"}))
+  #object[clojure.spec$spec_impl$reify__13832 0x737da35
+          "clojure.spec$spec_impl$reify__13832@737da35"] 
+
+  => (-> string?
+        (s/with-gen #(s/gen #{"string-a" "string-b"}))
+        (s/gen)
+        (gen/generate))
+  "string-a"
+  #+END_SRC
+  #+BEGIN_NOTES
+  - Lets you attach a custom gen
+  #+END_NOTES
+
+* Describe
+  #+BEGIN_SRC clojure
+  => (s/describe (s/or :fuel :uk.energy.meter/fuel :nil nil?))
+  (or :fuel :uk.energy.meter/fuel :nil nil?)
+
+  => (s/form (s/or :fuel :uk.energy.meter/fuel :nil nil?))
+  (clojure.spec/or :fuel :uk.energy.meter/fuel :nil clojure.core/nil?)
+  #+END_SRC
+  #+BEGIN_NOTES
+  - Echo back the original form
+  #+END_NOTES
+
+* Opaque?
+  :PROPERTIES:
+  :reveal_background: ./images/opaque-glass.jpg
+  # http://www.pixnio.com/free-images/textures-and-patterns/crinkled-glass-ice.jpg
+  :END:
+  #+BEGIN_SRC clojure
+  => (s/keys :req [::thing-a ::thing-b])
+
+  #object[clojure.spec$map_spec_impl$reify__13776 0x7e811071
+          "clojure.spec$map_spec_impl$reify__13776@7e811071"]
+  #+END_SRC
+  #+BEGIN_NOTES
+  - C.S is opaque?
+  - data of the specs themselves inaccessible
+  #+END_NOTES
+
+* Nothing in a Lisp is opaque
+  #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure
+  => (read-string "(s/keys :req [::thing-a ::thing-b])")
+  (s/keys :req [::thing-a ::thing-b])
+  #+END_SRC
+
+  #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure
+  => (s/form (s/keys :req [::thing-a ::thing-b]))
+  (s/keys :req [::thing-a ::thing-b])
+  #+END_SRC
+
+  #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure
+  => (build-ast '(s/keys :req [::thing-a ::thing-b]))
+  {:type 'clojure.spec/keys
+   :form {:req [{:type 'clojure.core/symbol?
+                 :form int?}
+                {:type 'clojure.core/symbol?
+                 :form string?}]}}
+  #+END_SRC
+  #+BEGIN_NOTES
+  - reader, analyzer, code as text
+  - each spec return form
+  - once we have the form
+  - bit of analysis -> tree
+  - detect other specs -> expand
+  - interpret, manipulate, other data structure
+  - what's the point?
+  - c.s doesn't support
+  #+END_NOTES
+* We wanted to render Swagger
+  #+BEGIN_NOTES
+  - first thing, render in diff format
+  - good exp swagger
+  - swagger needs json description
+  - reqs & responses json schema
+  #+END_NOTES
+* JSON Schema
+  #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC clojure
+  (s/def ::first-name string?)
+  (s/def ::last-name string?)
+  (s/def ::age nat-int?)
+  (s/def ::example-schema (s/keys :req-un [::first-name ::last-name]))
+  #+END_SRC
+
+  #+ATTR_REVEAL: :frag (appear)
+  #+BEGIN_SRC javascript
+  { "title": "Example Schema",
+    "type": "object",
+    "properties": {
+      "firstName": {
+        "type": "string"
+      },
+      "lastName": {
+        "type": "string"
+      },
+      "age": {
+        "description": "Age in years",
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "required": ["firstName", "lastName"] }
+  #+END_SRC
+  #+BEGIN_NOTES
+  - render this...
+  - into this...
+  - ...
+  - at the time - too new
+  - for existing solutions
+  #+END_NOTES
+
+* Translate
+  #+BEGIN_SRC clojure
+  {:type 'clojure.spec/keys
+   :form {:req [{:type 'clojure.core/symbol?
+                 :form int?}
+                {:type 'clojure.core/symbol?
+                 :form string?}]}}
+  #+END_SRC
+  #+BEGIN_NOTES
+  - given we have an abstract syntax tree
+  - how hard can it be
+  - to convert this tree
+  - json schema
+  - pretty straightforward to transform one tree to another
+  #+END_NOTES
+** 
+#+BEGIN_SRC clojure
+;; Simple Types
+nil       {:type 'null}
+boolean?  {:type 'boolean}
+string?   {:type 'string}
+
+;; Named
+keyword?  {:type 'string}
+
+;; Numbers
+symbol?   {:type 'string}
+char?     {:type 'string}
+int?      {:type 'integer :format 'int32}
+integer?  {:type 'integer :format 'int32}
+pos-int?  {:type 'integer :format 'int32 :minimum 1}
+nat-int?  {:type 'integer :format 'int32 :minimum 0}
+bigdec?   {:type 'long    :format 'int64}
+....
+#+END_SRC
+  #+BEGIN_NOTES
+  - walk the tree, substituting specs
+  #+END_NOTES
+** 
+ #+BEGIN_SRC clojure
+ ;; Sequences
+ coll?       {:type 'array}
+ list?       {:type 'array}
+ seq?        {:type 'array}
+ sequential? {:type 'array}
+ vector?     {:type 'array}
+
+ ;; Sets
+ set?        {:type 'array}
+
+ ;; Maps
+ map?        {:type 'object}
+ #+END_SRC
+  #+BEGIN_NOTES
+  - change shape
+  - spit out with json lib
+  #+END_NOTES
+
+* What are we missing?
+  #+BEGIN_SRC clojure
+  (s/def ::first-name string?)
+  (s/def ::last-name string?)
+  (s/def ::age nat-int?)
+  (s/def ::example-schema (s/keys :req-un [::first-name ::last-name]))
+  #+END_SRC
+
+  #+BEGIN_SRC javascript
+  { ...
+    "age": { "description": "Age in years", ... } ... },
+    ...
+  }
+  #+END_SRC
+  #+BEGIN_NOTES
+  - more powerful data specification language
+  - not concerned with everything json schema
+  #+END_NOTES
+
+* 
+  :PROPERTIES:
+  :reveal_background: ./images/mpan.jpg
+  :END:
+  #+BEGIN_NOTES
+  - Before I started working in energy switching at uSwitch
+  - Meter point administration number
+  - unique id
+  - two components
+  - don't need to know
+  - api tell you what data means
+  - c.s can't, but flexible
+  #+END_NOTES
+* Domain Specific Language
+  :PROPERTIES:
+  :reveal_background: ./images/domain-specific-language.jpg
+  :END:
+# https://upload.wikimedia.org/wikipedia/commons/f/f1/160312_Takenaka_Carpentry_Tools_Museum_Kobe_Japan16s.jpg
+# https://commons.wikimedia.org/wiki/File:160312_Takenaka_Carpentry_Tools_Museum_Kobe_Japan16s.jpg
+# http://1mhvqt3xoj4u2otrxo1recge-wpengine.netdna-ssl.com/wp-content/uploads/2014/10/octopus-photoshop.jpg
+# https://www.reddit.com/r/HybridAnimals/comments/1bixjd/the_poisonous_mushroctopus/
+# http://i.imgur.com/dTyg0eb.jpg
+  #+BEGIN_NOTES
+  - c.s = dsl
+  - lisps = extension really simple
+  - protocol = more simple
+  #+END_NOTES
+
+* Docspec
+  #+BEGIN_SRC clojure
+  (defprotocol Docspec
+    (docs [_]))
+  
+  (defmacro doc [docstring spec]
+    (reify
+      s/Spec
+      (s/conform*  [_ x] (s/conform* spec x))
+      (s/unform*   [_ x] (s/unform* spec x))
+      (s/explain*  [_ path via in x] (s/explain* spec path via in x)
+      (s/gen*      [_ overrides path rmap] (s/gen* overrides path rmap)
+      (s/with-gen* [_ gfn] (s/with-gen* spec gfn)
+      (s/describe* [_] `(doc ~spec ~docstring))
+      Docspec
+      (docs        [_] docstring))
+  #+END_SRC
+  #+BEGIN_NOTES
+  - passes conform, unform, etc to child
+  - embed docstring in closure
+  - docs
+  - you are free to override any conforming behaviour on other specs
+  #+END_NOTES
+** Usage
+   #+BEGIN_SRC clojure
+   (s/def :energy.supply/topline
+     (doc "The top line (supplementary data) of the Meter Point
+           Administration Number (MPAN)."
+          string?))
+   
+   (s/def :energy.supply/mpan
+     (doc "The bottom line (core data) of the Meter Point
+           Administration Number (MPAN)."
+          string?))
+   #+END_SRC
+  #+BEGIN_NOTES
+  - How to declare a docspec
+  - all complex specs done this way
+  #+END_NOTES
+* Other languages exist
+  #+BEGIN_NOTES
+  - We don't just write things in clojure
+  - website = ruby
+  - utilities = go
+  - can't use spec directly
+  - feedback without hitting API
+  - without repeating effort
+  #+END_NOTES
+* JSON Schema Models
+  #+BEGIN_SRC javascript
+  {"PAF": {
+     "properties": {
+       "building-number":           {"type":"string"},
+       "building-name":             {"type":"string"},
+       "sub-building-name":         {"type":"string"},
+       "thoroughfare":              {"type":"string"},
+       "dependent-thoroughfare":    {"type":"string"},
+       ...
+       "town":                      {"type":"string"},
+       "postcode":                  {"$ref":"#/definitions/Postcode"},},
+     "type": "object",
+     "required": ["sub-building-name", "building-name", "building-number", ...],
+     "title": "Paf",
+     "description": "PAF Format. The Postcode Address File (PAF) is a ...",
+     "$schema":"http://...com/uswitch/spec/address/paf"},
+   "definitions": {
+     "Postcode": {"type":  "string",
+                  "title": "Postcode",
+                  "description": "A postcode is a series of letters ..."}}}
+   #+END_SRC
+  #+BEGIN_NOTES
+  - add enough vocab
+  - rich json docs
+  - spit to s3 -> ruby program
+  - json schema validation lib
+  - interface between clj & rb speaks json
+
+  - So that's the client taken care of
+  - how can we protect our APIs?
+  #+END_NOTES
+
+* Request
+  #+BEGIN_SRC clojure
+  (def uuid-conformer
+    (letfn [(coercer [x]
+              (try
+                (java.util.UUID/fromString x)
+                (catch Throwable _ x))) 
+      (s/conformer (comp uuid? coercer) str)))
+  
+  (s/def :route-params/id uuid-conformer)
+  (s/def ::route-params
+    (s/keys :req-un [:route-params/id]))
+  
+  (s/def :query-params/other-id uuid-conformer)
+  (s/def ::query-params
+    (s/keys :req-un [:query-params/other-id]))
+  
+  (s/def ::request
+    (s/keys :req-un [::route-params ::query-params]))
+  #+END_SRC
+  #+BEGIN_NOTES
+  - spec the parts of a ring request
+  - request parameters
+  - param-spec use conformer-spec
+  - param coercion
+  #+END_NOTES
+
+* Response
+#+BEGIN_SRC clojure
+(s/def ::response
+  (s/or :200
+        (doc "List of addresses"
+          (s/keys :req-un [:success/status :success/headers :success/body]))
+
+        :400
+        (doc "Bad Request. The postcode is malformed."
+          (s/keys :req-un [:error/status :error/headers :error/body]))
+
+        :406
+        (doc "Not Acceptable. The requested resource is
+              capable of generating only content not acceptable
+              according to the Accept headers sent in the request."
+          (s/keys :req-un [:error/status :error/headers :error/body]))
+
+        ...))
+#+END_SRC
+#+BEGIN_NOTES
+- RESTful API
+- responses = domain models
+- wrapped in ring response
+- response is going to be one or more type of response
+#+END_NOTES
+* Request Handler
+   #+BEGIN_SRC clojure
+   (s/def request-handler
+     (doc "Returns rate-card identified by id, given a market-id"
+       (s/fspec 
+         :args (s/cat :request ::request)
+         :ret ::response)))
+   #+END_SRC
+#+BEGIN_NOTES
+- request-handler = input request, output response
+- c.s fspec is a spec to define a fns in & output
+#+END_NOTES
+* Instrument
+   #+BEGIN_SRC clojure
+   (require '[clojure.spec.test :as t])
+
+   (s/fdef db/some-query
+     :args (s/cat :id ::id)
+     :ret ::database-row)
+
+   (t/instrument `db/some-query {:stub #{`db/some-query}})
+
+   (t/instrument `request-handler)
+
+   (t/check `request-handler)
+   #+END_SRC
+   #+BEGIN_NOTES
+   - use these specs
+   - enforce boundary shape & type of data that comes out request-handlers
+   - assert reqs & responses conform
+   - instrument request-handlers & data producers
+   - test.check to drive tests
+   - Generative testing is now /that/ simple.
+   #+END_NOTES
+* Is that enough value yet?
+  #+BEGIN_NOTES
+  - is that enough value yet?
+  - spent effort - specced every inch of ds
+  - enough value to justify?
+  - probably, but there's more.
+  - Use specs to derive a data transformation function between 2 specs
+  #+END_NOTES
+* 
+   :PROPERTIES:
+   :reveal_background: ./images/mapping.jpg
+   :END:
+  #+BEGIN_NOTES
+  - ASTs = detailed mapping of structure
+  #+END_NOTES
+** 
+   :PROPERTIES:
+   :reveal_background: ./images/roadmap1.jpg
+   :END:
+  #+BEGIN_NOTES
+  - each tree = road map to each value
+  #+END_NOTES
+** 
+   :PROPERTIES:
+   :reveal_background: ./images/simple-structure.jpg
+   :END:
+  #+BEGIN_NOTES
+  - 2 trees, leaves same,
+  - structure different
+  - use this mapping to derive a fn
+  - convert simple ds to different shape
+  - db row -> nested map
+
+  - we've used this for api versions
+  - in simple responses
+  #+END_NOTES
+* Unique
+  #+BEGIN_SRC clojure
+  {:col-a 123
+   :col-b "foo"
+   :col-c "bar"
+   :col-d 500.456}
+  #+END_SRC
+  #+BEGIN_NOTES
+  - uniquely identifiable
+  - db row, uniqueness in name
+  - pull out to hash map
+  - use to build up new structure
+  #+END_NOTES
+* Structure can define uniqueness
+  #+BEGIN_NOTES
+  - structural..
+  - uniqueness can be in path
+
+  - Sometimes not in name/path
+  - it's in the data itself
+  - it's in the type of the data
+  - what happens when data is complex?
+  #+END_NOTES
+* Evolution of Data Structures
+  :PROPERTIES:
+  :reveal_background: ./images/evolution.jpg
+  :END:
+  # https://upload.wikimedia.org/wikipedia/commons/e/e5/Lonesome_George_-Pinta_giant_tortoise_-Santa_Cruz.jpg
+  #+BEGIN_NOTES
+  - lots of different complex data structures
+  - evolved, lack of constraints
+  - small & neat
+  - monstrous.
+  #+END_NOTES
+* Complex data structures
+  #+BEGIN_NOTES
+  - interesting features
+  - html, sum types, built-in compression
+
+  - name & structure starts to break down
+  - human can tell difference
+  - they can see the patterns in the data
+  #+END_NOTES
+
+** 
+   :PROPERTIES:
+   :reveal_background: ./images/roadmap1.jpg
+   :END:
+  #+BEGIN_NOTES
+  - help program with
+  - increase vocabulary again
+  - instruct fn which fork in road to take
+  #+END_NOTES
+* categorize
+  #+BEGIN_SRC clojure
+  (categorize ::tariff
+    :fuel         (fn [value] (get-in value [:meter :fuel]))
+    :payment-type (fn [value] (:payment-type value))))
+  #+END_SRC
+  #+BEGIN_NOTES
+  - this is a categorize spec
+  - tells us how leaf value are different
+  - categorised by fuel and payment type
+  - these functions called on data tell you the type
+  #+END_NOTES
+
+** 
+   :PROPERTIES:
+   :reveal_background: ./images/disjoint-typed-subtree.jpg
+   :END:
+  #+BEGIN_NOTES
+  - every leaf value down should be categorized
+  - flattening each subtree into a set
+  #+END_NOTES
+** 
+   :PROPERTIES:
+   :reveal_background: ./images/disjoint-set-1.jpg
+   :END:
+  #+BEGIN_NOTES
+  - if we did this to all the subtrees
+  - union of all these sets - disjoint
+  #+END_NOTES
+** 
+   :PROPERTIES:
+   :reveal_background: ./images/disjoint-set-2.jpg
+   :END:
+  #+BEGIN_NOTES
+  - not lost information to build it back up
+  #+END_NOTES
+** 
+   :PROPERTIES:
+   :reveal_background: ./images/disjoint-typed-subtree.jpg
+   :END:
+  #+BEGIN_NOTES
+  - when we do build back up
+  - categorize = less about classification
+  - that's already done - set is disjoint
+  - more about branching point
+  #+END_NOTES
+** re-categorize
+  #+BEGIN_SRC clojure
+  (categorize ::tariff
+    :fuel         (fn [value] (get-in value [:meter :fuel]))
+    :payment-type (fn [value] (:payment-type value))))
+  #+END_SRC
+  #+BEGIN_NOTES
+  - more about branching point
+  - where set needs to be split, by what
+  - same vocab - if possible, transform in both directions
+  #+END_NOTES
+
+* select
+#+BEGIN_SRC clojure
+(s/def ::electricity
+  (select
+    (s/keys :req-un [::variant ::rates ::standing-charge])
+    :fuel #{"Electricity"})
+
+(s/def ::gas
+  (select
+    (s/keys :req-un [::variant ::rates ::standing-charge])
+    :fuel #{"Gas"})
+#+END_SRC
+  #+BEGIN_NOTES
+  - there's another addition to the vocabulary
+  - tell fn which specific type of data goes down branch
+  - if we can express this = transform more types
+  - key elec = data tagged elec
+  - key gas = data tagged gas
+  #+END_NOTES
+
+* How far can we go?
+  #+ATTR_REVEAL: :frag (appear)
+  - API responses
+  - Complex 1MB documents
+  - Slimmed down version
+  - Each categorised element split.
+  #+BEGIN_NOTES
+  - using this vocab
+  - transform complex API responses between versions and formats
+  - transform quite large 1MB documents into slimmed down versions
+  - each categorised element split out
+  #+END_NOTES
+
+* 
+  :PROPERTIES:
+  :reveal_background: ./images/extract.jpg
+  :END:
+  #+BEGIN_NOTES
+  - same techniques to extract
+  - extract is a transform - throw away data
+  #+END_NOTES
+* Extract
+  #+BEGIN_SRC clojure
+  (defn some-pricing-function [vat rates]
+    ;; ...
+    )
+
+  (s/fspec some-pricing-function
+    :args (s/cat :vat ::vat :rates ::rates)
+    :ret  decimal?))
+
+  (x-apply some-pricing-function giant-data-structure)
+  #+END_SRC
+  #+BEGIN_NOTES
+  - work out what data fns need from fspec
+  - different calling convention
+  - extraction done for us
+  - e.g. this function needs vat and rates
+  - giant-data-structure
+  #+END_NOTES
+
+* Speculate
+  https://github.com/uswitch/speculate
+  #+BEGIN_NOTES
+  - extract most ideas into lib
+  - called speculate
+  - work to do
+  - algo not optimal
+  - experimental, likely to change, but works for us
+  - in production in some APIs & services
+  #+END_NOTES
+* 
+  #+BEGIN_NOTES
+  - not sure we'll be in a place where 
+  - stop creating services & ds
+  - ds must change, network, business requirements
+  - in a place where dealing with this is simpler
+  - it's less painful.
+  - it doesn't hurt
+  - we just write the specs
+  - at least in our clojure code
+  - I think all this effort is worth it.
+  - Because you *can* use them to reduce all that repetition.
+  #+END_NOTES
+* Thanks :)
+  @andrewmcveigh
+  https://github.com/andrewmcveigh/speculative-development

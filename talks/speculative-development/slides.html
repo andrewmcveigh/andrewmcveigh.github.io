@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Speculative Development</title>
+<meta name="author" content="(Andrew Mcveigh)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="file:///home/andrewmcveigh/code/reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="file:///home/andrewmcveigh/code/reveal.js/css/theme/night.css" id="theme"/>
+
+<link rel="stylesheet" href="./css/override.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'file:///home/andrewmcveigh/code/reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1 class="title">Speculative Development</h1><h2 class="author">Andrew Mcveigh</h2><p class="date">Created: 2016-12-01 Thu 21:09</p>
+</section>
+
+<section>
+<section id="slide-orgb28b4a0">
+<h2 id="orgb28b4a0">Repeating stuff hurts</h2>
+<aside class="notes">
+<ul>
+<li>repeating stuff hurts</li>
+<li>always have to repeat things, slightly different</li>
+<li>Splitting -&gt; specialised services = flexibility</li>
+<li>lots different APIs, different datastructures</li>
+<li>ds = same/similar information, different versions</li>
+<li>work, maintain compatibility</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org3d61a5f" data-background="./images/leverage.jpg">
+<h2 id="org3d61a5f">Leverage</h2>
+<aside class="notes">
+<ul>
+<li>c.s. is a tool to prevent mistakes when repeating</li>
+<li>Spent time &amp; effort describing</li>
+<li>Leverage</li>
+<li>C.S gives leverage, want more</li>
+<li>Stop repeating ourselves so much</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgfbae95a">
+<h2 id="orgfbae95a">Why would you use Clojure Spec?</h2>
+<ul>
+<li class="fragment appear">Data validation</li>
+<li class="fragment appear">Generative testing</li>
+<li class="fragment appear">Richer documentation</li>
+<li class="fragment appear">Parsing</li>
+
+</ul>
+<aside class="notes">
+<ul>
+<li>similar space prismatic schema</li>
+<li>concerns: data validation, gen testing</li>
+<li>designed to enable richer docs</li>
+<li>clojure code parsing with same language</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org8bc4cd7">
+<h2 id="org8bc4cd7">An example</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::fuel</span> #{<span style="color: #E6DB74;">"electricity"</span> <span style="color: #E6DB74;">"gas"</span>}<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::variant</span> string?<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">:energy/meter</span> <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">::fuel</span> <span style="color: #AE81FF;">::variant</span>]<span style="color: #666666;">))</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (appear)">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>valid? <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">energy</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">meter</span> {<span style="color: #AE81FF;">:fuel</span> <span style="color: #E6DB74;">"electricity"</span> <span style="color: #AE81FF;">:variant</span> <span style="color: #E6DB74;">"Economy 7"</span>}<span style="color: #666666;">)</span>
+<span style="color: #AE81FF;">true</span>
+
+=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>valid? <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">energy</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">meter</span> [<span style="color: #E6DB74;">"cheese"</span> <span style="color: #E6DB74;">"milk"</span> <span style="color: #E6DB74;">"yoghurt"</span>]<span style="color: #666666;">)</span>
+<span style="color: #AE81FF;">false</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>Want to check the thing that you have is an energy meter</li>
+<li>rather than a vector of dairy products</li>
+<li>not selling clojure spec</li>
+<li>more about extra value you can get from detailed specs</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgd758eed">
+<h2 id="orgd758eed">What is a Spec?</h2>
+<ul>
+<li class="fragment appear">clojure.core predicate function</li>
+<li class="fragment appear">arbitrary function</li>
+<li class="fragment appear">set of values</li>
+
+</ul>
+<aside class="notes">
+<ul>
+<li>Clojure value</li>
+<li>predicate function from clojure core</li>
+<li>arbitrary function</li>
+<li>set of values</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org2881fd0">
+<h2 id="org2881fd0">Naming</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">=&gt; <span style="color: #666666;">(</span>require '[<span style="color: #66D9EF;">clojure.spec</span> <span style="color: #AE81FF;">:as</span> s]<span style="color: #666666;">)</span>
+
+=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">:uk.energy.meter/fuel</span> #{<span style="color: #E6DB74;">"electricity"</span> <span style="color: #E6DB74;">"gas"</span>}<span style="color: #666666;">)</span>
+<span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>Combine/compose</li>
+<li>global registry - def</li>
+<li>specs named with keyword</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org37b2907">
+<h2 id="org37b2907">It's All Protocols</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #F92672;">defprotocol</span> <span style="color: #66D9EF;">Spec</span>
+  <span style="color: #666666;">(</span>conform*  [spec x]<span style="color: #666666;">)</span>
+  <span style="color: #666666;">(</span>unform*   [spec y]<span style="color: #666666;">)</span>
+  <span style="color: #666666;">(</span>explain*  [spec path via in x]<span style="color: #666666;">)</span>
+  <span style="color: #666666;">(</span>gen*      [spec overrides path rmap]<span style="color: #666666;">)</span>
+  <span style="color: #666666;">(</span>with-gen* [spec gfn]<span style="color: #666666;">)</span>
+  <span style="color: #666666;">(</span>describe* [spec]<span style="color: #666666;">))</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>Bottom = Spec protocol</li>
+<li>higher level functions mirror protocol</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org445dcdc">
+<h2 id="org445dcdc">Conform</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>conform <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> <span style="color: #E6DB74;">"electricity"</span><span style="color: #666666;">)</span>
+<span style="color: #E6DB74;">"electricity"</span>
+
+=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>conform <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>or <span style="color: #AE81FF;">:fuel</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> <span style="color: #AE81FF;">:nil</span> nil?<span style="color: #666666;">)</span> <span style="color: #E6DB74;">"electricity"</span><span style="color: #666666;">)</span>
+[<span style="color: #AE81FF;">:fuel</span> <span style="color: #E6DB74;">"electricity"</span>]
+
+=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>conform <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> 42<span style="color: #666666;">)</span>
+<span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">clojure.spec</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">invalid</span>
+
+=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>valid? <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> <span style="color: #E6DB74;">"gas"</span><span style="color: #666666;">)</span>
+<span style="color: #AE81FF;">true</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>data looks like spec?</li>
+<li>returns conformed data</li>
+<li>destructuring, or/regex spec</li>
+<li>each spec, rules of conformity</li>
+<li>child specs</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org4c5153a">
+<h2 id="org4c5153a">Unform</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>unform <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>or <span style="color: #AE81FF;">:fuel</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> <span style="color: #AE81FF;">:nil</span> nil?<span style="color: #666666;">)</span> [<span style="color: #AE81FF;">:fuel</span> <span style="color: #E6DB74;">"electricity"</span>]<span style="color: #666666;">)</span>
+<span style="color: #E6DB74;">"electricity"</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>Removes destructuring</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org41d6b15">
+<h2 id="org41d6b15">Explain</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>explain <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> #{<span style="color: #E6DB74;">"something-else"</span>}<span style="color: #666666;">)</span>
+val:             #{<span style="color: #E6DB74;">"something-else"</span>}
+fails spec:      <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span>
+      predicate: #{<span style="color: #E6DB74;">"gas"</span> <span style="color: #E6DB74;">"electricity"</span>}
+<span style="color: #AE81FF;">nil</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>Spec &amp; invalid, how fail?</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org3a794bb">
+<h2 id="org3a794bb">Gen</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>gen <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span><span style="color: #666666;">)</span>
+#c.t.c.g.<span style="color: #66D9EF;">Generator</span>{<span style="color: #AE81FF;">:gen</span> #function[<span style="color: #66D9EF;">c.t.c.generators/such-that</span><span style="color: #F8F8F2; background-color: #111111;">/</span>fn--21637]} 
+
+=&gt; <span style="color: #666666;">(</span>require '[<span style="color: #66D9EF;">clojure.spec.gen</span> <span style="color: #AE81FF;">:as</span> gen]<span style="color: #666666;">)</span>
+
+=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">gen</span><span style="color: #F8F8F2; background-color: #111111;">/</span>generate <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>gen <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span><span style="color: #666666;">))</span>
+<span style="color: #E6DB74;">"gas"</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>Returns a gen for spec</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org325e605">
+<h2 id="org325e605">With-gen</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>with-gen string? #<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>gen #{<span style="color: #E6DB74;">"string-a"</span> <span style="color: #E6DB74;">"string-b"</span>}<span style="color: #666666;">))</span>
+#object[<span style="color: #66D9EF;">clojure.spec</span>$spec_impl$reify__13832 0x737da35
+        <span style="color: #E6DB74;">"clojure.spec$spec_impl$reify__13832@737da35"</span>] 
+
+=&gt; <span style="color: #666666;">(</span><span style="color: #F92672;">-&gt;</span> string?
+      <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>with-gen #<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>gen #{<span style="color: #E6DB74;">"string-a"</span> <span style="color: #E6DB74;">"string-b"</span>}<span style="color: #666666;">))</span>
+      <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>gen<span style="color: #666666;">)</span>
+      <span style="color: #666666;">(</span><span style="color: #66D9EF;">gen</span><span style="color: #F8F8F2; background-color: #111111;">/</span>generate<span style="color: #666666;">))</span>
+<span style="color: #E6DB74;">"string-a"</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>Lets you attach a custom gen</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org46dedee">
+<h2 id="org46dedee">Describe</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>describe <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>or <span style="color: #AE81FF;">:fuel</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> <span style="color: #AE81FF;">:nil</span> nil?<span style="color: #666666;">))</span>
+<span style="color: #666666;">(</span><span style="color: #F92672;">or</span> <span style="color: #AE81FF;">:fuel</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> <span style="color: #AE81FF;">:nil</span> nil?<span style="color: #666666;">)</span>
+
+=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>form <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>or <span style="color: #AE81FF;">:fuel</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> <span style="color: #AE81FF;">:nil</span> nil?<span style="color: #666666;">))</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">clojure.spec</span><span style="color: #F8F8F2; background-color: #111111;">/</span>or <span style="color: #AE81FF;">:fuel</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">uk.energy.meter</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">fuel</span> <span style="color: #AE81FF;">:nil</span> <span style="color: #66D9EF;">clojure.core</span><span style="color: #F8F8F2; background-color: #111111;">/</span>nil?<span style="color: #666666;">)</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>Echo back the original form</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orga622d68" data-background="./images/opaque-glass.jpg">
+<h2 id="orga622d68">Opaque?</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req</span> [<span style="color: #AE81FF;">::thing-a</span> <span style="color: #AE81FF;">::thing-b</span>]<span style="color: #666666;">)</span>
+
+#object[<span style="color: #66D9EF;">clojure.spec</span>$map_spec_impl$reify__13776 0x7e811071
+        <span style="color: #E6DB74;">"clojure.spec$map_spec_impl$reify__13776@7e811071"</span>]
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>C.S is opaque?</li>
+<li>data of the specs themselves inaccessible</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orge084e77">
+<h2 id="orge084e77">Nothing in a Lisp is opaque</h2>
+<div class="org-src-container">
+
+<pre  class="fragment (appear)">=&gt; <span style="color: #666666;">(</span>read-string <span style="color: #E6DB74;">"(s/keys </span><span style="color: #E6DB74;">:req</span><span style="color: #E6DB74;"> [</span><span style="color: #E6DB74;">::thing-a</span><span style="color: #E6DB74;"> </span><span style="color: #E6DB74;">::thing-b</span><span style="color: #E6DB74;">])"</span><span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req</span> [<span style="color: #AE81FF;">::thing-a</span> <span style="color: #AE81FF;">::thing-b</span>]<span style="color: #666666;">)</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="fragment (appear)">=&gt; <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>form <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req</span> [<span style="color: #AE81FF;">::thing-a</span> <span style="color: #AE81FF;">::thing-b</span>]<span style="color: #666666;">))</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req</span> [<span style="color: #AE81FF;">::thing-a</span> <span style="color: #AE81FF;">::thing-b</span>]<span style="color: #666666;">)</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="fragment (appear)">=&gt; <span style="color: #666666;">(</span>build-ast '<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req</span> [<span style="color: #AE81FF;">::thing-a</span> <span style="color: #AE81FF;">::thing-b</span>]<span style="color: #666666;">))</span>
+{<span style="color: #AE81FF;">:type</span> '<span style="color: #66D9EF;">clojure.spec</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys
+ <span style="color: #AE81FF;">:form</span> {<span style="color: #AE81FF;">:req</span> [{<span style="color: #AE81FF;">:type</span> '<span style="color: #66D9EF;">clojure.core</span><span style="color: #F8F8F2; background-color: #111111;">/</span>symbol?
+               <span style="color: #AE81FF;">:form</span> int?}
+              {<span style="color: #AE81FF;">:type</span> '<span style="color: #66D9EF;">clojure.core</span><span style="color: #F8F8F2; background-color: #111111;">/</span>symbol?
+               <span style="color: #AE81FF;">:form</span> string?}]}}
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>reader, analyzer, code as text</li>
+<li>each spec return form</li>
+<li>once we have the form</li>
+<li>bit of analysis -&gt; tree</li>
+<li>detect other specs -&gt; expand</li>
+<li>interpret, manipulate, other data structure</li>
+<li>what's the point?</li>
+<li>c.s doesn't support</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org2efc222">
+<h2 id="org2efc222">We wanted to render Swagger</h2>
+<aside class="notes">
+<ul>
+<li>first thing, render in diff format</li>
+<li>good exp swagger</li>
+<li>swagger needs json description</li>
+<li>reqs &amp; responses json schema</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org19f5b51">
+<h2 id="org19f5b51">JSON Schema</h2>
+<div class="org-src-container">
+
+<pre  class="fragment (appear)"><span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::first-name</span> string?<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::last-name</span> string?<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::age</span> nat-int?<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::example-schema</span> <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">::first-name</span> <span style="color: #AE81FF;">::last-name</span>]<span style="color: #666666;">))</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="fragment (appear)">{ <span style="color: #E6DB74;">"title"</span>: <span style="color: #E6DB74;">"Example Schema"</span>,
+  <span style="color: #E6DB74;">"type"</span>: <span style="color: #E6DB74;">"object"</span>,
+  <span style="color: #E6DB74;">"properties"</span>: {
+    <span style="color: #E6DB74;">"firstName"</span>: {
+      <span style="color: #E6DB74;">"type"</span>: <span style="color: #E6DB74;">"string"</span>
+    },
+    <span style="color: #E6DB74;">"lastName"</span>: {
+      <span style="color: #E6DB74;">"type"</span>: <span style="color: #E6DB74;">"string"</span>
+    },
+    <span style="color: #E6DB74;">"age"</span>: {
+      <span style="color: #E6DB74;">"description"</span>: <span style="color: #E6DB74;">"Age in years"</span>,
+      <span style="color: #E6DB74;">"type"</span>: <span style="color: #E6DB74;">"integer"</span>,
+      <span style="color: #E6DB74;">"minimum"</span>: 0
+    }
+  },
+  <span style="color: #E6DB74;">"required"</span>: [<span style="color: #E6DB74;">"firstName"</span>, <span style="color: #E6DB74;">"lastName"</span>] }
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>render this&#x2026;</li>
+<li>into this&#x2026;</li>
+<li>&#x2026;</li>
+<li>at the time - too new</li>
+<li>for existing solutions</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgda30116">
+<h2 id="orgda30116">Translate</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">{<span style="color: #AE81FF;">:type</span> '<span style="color: #66D9EF;">clojure.spec</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys
+ <span style="color: #AE81FF;">:form</span> {<span style="color: #AE81FF;">:req</span> [{<span style="color: #AE81FF;">:type</span> '<span style="color: #66D9EF;">clojure.core</span><span style="color: #F8F8F2; background-color: #111111;">/</span>symbol?
+               <span style="color: #AE81FF;">:form</span> int?}
+              {<span style="color: #AE81FF;">:type</span> '<span style="color: #66D9EF;">clojure.core</span><span style="color: #F8F8F2; background-color: #111111;">/</span>symbol?
+               <span style="color: #AE81FF;">:form</span> string?}]}}
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>given we have an abstract syntax tree</li>
+<li>how hard can it be</li>
+<li>to convert this tree</li>
+<li>json schema</li>
+<li>pretty straightforward to transform one tree to another</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org5165dc8">
+<h3 id="org5165dc8"></h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #75715E;">;; </span><span style="color: #75715E; background-color: #111111;">Simple Types</span>
+<span style="color: #AE81FF;">nil</span>       {<span style="color: #AE81FF;">:type</span> 'null}
+boolean?  {<span style="color: #AE81FF;">:type</span> 'boolean}
+string?   {<span style="color: #AE81FF;">:type</span> 'string}
+
+<span style="color: #75715E;">;; </span><span style="color: #75715E; background-color: #111111;">Named</span>
+keyword?  {<span style="color: #AE81FF;">:type</span> 'string}
+
+<span style="color: #75715E;">;; </span><span style="color: #75715E; background-color: #111111;">Numbers</span>
+symbol?   {<span style="color: #AE81FF;">:type</span> 'string}
+char?     {<span style="color: #AE81FF;">:type</span> 'string}
+int?      {<span style="color: #AE81FF;">:type</span> 'integer <span style="color: #AE81FF;">:format</span> 'int32}
+integer?  {<span style="color: #AE81FF;">:type</span> 'integer <span style="color: #AE81FF;">:format</span> 'int32}
+pos-int?  {<span style="color: #AE81FF;">:type</span> 'integer <span style="color: #AE81FF;">:format</span> 'int32 <span style="color: #AE81FF;">:minimum</span> 1}
+nat-int?  {<span style="color: #AE81FF;">:type</span> 'integer <span style="color: #AE81FF;">:format</span> 'int32 <span style="color: #AE81FF;">:minimum</span> 0}
+bigdec?   {<span style="color: #AE81FF;">:type</span> 'long    <span style="color: #AE81FF;">:format</span> 'int64}
+....
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>walk the tree, substituting specs</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgfda8b16">
+<h3 id="orgfda8b16"></h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #75715E;">;; </span><span style="color: #75715E; background-color: #111111;">Sequences</span>
+coll?       {<span style="color: #AE81FF;">:type</span> 'array}
+list?       {<span style="color: #AE81FF;">:type</span> 'array}
+seq?        {<span style="color: #AE81FF;">:type</span> 'array}
+sequential? {<span style="color: #AE81FF;">:type</span> 'array}
+vector?     {<span style="color: #AE81FF;">:type</span> 'array}
+
+<span style="color: #75715E;">;; </span><span style="color: #75715E; background-color: #111111;">Sets</span>
+set?        {<span style="color: #AE81FF;">:type</span> 'array}
+
+<span style="color: #75715E;">;; </span><span style="color: #75715E; background-color: #111111;">Maps</span>
+map?        {<span style="color: #AE81FF;">:type</span> 'object}
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>change shape</li>
+<li>spit out with json lib</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org6896373">
+<h2 id="org6896373">What are we missing?</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::first-name</span> string?<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::last-name</span> string?<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::age</span> nat-int?<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::example-schema</span> <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">::first-name</span> <span style="color: #AE81FF;">::last-name</span>]<span style="color: #666666;">))</span>
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre  class="src src-javascript">{ ...
+  <span style="color: #E6DB74;">"age"</span>: { <span style="color: #E6DB74;">"description"</span>: <span style="color: #E6DB74;">"Age in years"</span>, ... } ... },
+  ...
+}
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>more powerful data specification language</li>
+<li>not concerned with everything json schema</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgbb7ae87" data-background="./images/mpan.jpg">
+<h2 id="orgbb7ae87"></h2>
+<aside class="notes">
+<ul>
+<li>Before I started working in energy switching at uSwitch</li>
+<li>Meter point administration number</li>
+<li>unique id</li>
+<li>two components</li>
+<li>don't need to know</li>
+<li>api tell you what data means</li>
+<li>c.s can't, but flexible</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgc98d17b" data-background="./images/domain-specific-language.jpg">
+<h2 id="orgc98d17b">Domain Specific Language</h2>
+<aside class="notes">
+<ul>
+<li>c.s = dsl</li>
+<li>lisps = extension really simple</li>
+<li>protocol = more simple</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org48c3f43">
+<h2 id="org48c3f43">Docspec</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #F92672;">defprotocol</span> <span style="color: #66D9EF;">Docspec</span>
+  <span style="color: #666666;">(</span>docs [_]<span style="color: #666666;">))</span>
+
+<span style="color: #666666;">(</span><span style="color: #F92672;">defmacro</span> <span style="color: #A6E22E;">doc</span> [docstring spec]
+  <span style="color: #666666;">(</span>reify
+    <span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #66D9EF;">Spec</span>
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>conform*  [_ x] <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>conform* spec x<span style="color: #666666;">))</span>
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>unform*   [_ x] <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>unform* spec x<span style="color: #666666;">))</span>
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>explain*  [_ path via in x] <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>explain* spec path via in x<span style="color: #666666;">)</span>
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>gen*      [_ overrides path rmap] <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>gen* overrides path rmap<span style="color: #666666;">)</span>
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>with-gen* [_ gfn] <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>with-gen* spec gfn<span style="color: #666666;">)</span>
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>describe* [_] `<span style="color: #666666;">(</span>doc ~spec ~docstring<span style="color: #666666;">))</span>
+    <span style="color: #66D9EF;">Docspec</span>
+    <span style="color: #666666;">(</span>docs        [_] docstring<span style="color: #666666;">))</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>passes conform, unform, etc to child</li>
+<li>embed docstring in closure</li>
+<li>docs</li>
+<li>you are free to override any conforming behaviour on other specs</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgbf0e895">
+<h3 id="orgbf0e895">Usage</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">:energy.supply/topline</span>
+  <span style="color: #666666;">(</span>doc <span style="color: #E6DB74;">"The top line (supplementary data) of the Meter Point</span>
+<span style="color: #E6DB74;">        Administration Number (MPAN)."</span>
+       string?<span style="color: #666666;">))</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">:energy.supply/mpan</span>
+  <span style="color: #666666;">(</span>doc <span style="color: #E6DB74;">"The bottom line (core data) of the Meter Point</span>
+<span style="color: #E6DB74;">        Administration Number (MPAN)."</span>
+       string?<span style="color: #666666;">))</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>How to declare a docspec</li>
+<li>all complex specs done this way</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org5cdd8b5">
+<h2 id="org5cdd8b5">Other languages exist</h2>
+<aside class="notes">
+<ul>
+<li>We don't just write things in clojure</li>
+<li>website = ruby</li>
+<li>utilities = go</li>
+<li>can't use spec directly</li>
+<li>feedback without hitting API</li>
+<li>without repeating effort</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgb5d4dd1">
+<h2 id="orgb5d4dd1">JSON Schema Models</h2>
+<div class="org-src-container">
+
+<pre  class="src src-javascript">{<span style="color: #E6DB74;">"PAF"</span>: {
+   <span style="color: #E6DB74;">"properties"</span>: {
+     <span style="color: #E6DB74;">"building-number"</span>:           {<span style="color: #E6DB74;">"type"</span>:<span style="color: #E6DB74;">"string"</span>},
+     <span style="color: #E6DB74;">"building-name"</span>:             {<span style="color: #E6DB74;">"type"</span>:<span style="color: #E6DB74;">"string"</span>},
+     <span style="color: #E6DB74;">"sub-building-name"</span>:         {<span style="color: #E6DB74;">"type"</span>:<span style="color: #E6DB74;">"string"</span>},
+     <span style="color: #E6DB74;">"thoroughfare"</span>:              {<span style="color: #E6DB74;">"type"</span>:<span style="color: #E6DB74;">"string"</span>},
+     <span style="color: #E6DB74;">"dependent-thoroughfare"</span>:    {<span style="color: #E6DB74;">"type"</span>:<span style="color: #E6DB74;">"string"</span>},
+     ...
+     <span style="color: #E6DB74;">"town"</span>:                      {<span style="color: #E6DB74;">"type"</span>:<span style="color: #E6DB74;">"string"</span>},
+     <span style="color: #E6DB74;">"postcode"</span>:                  {<span style="color: #E6DB74;">"$ref"</span>:<span style="color: #E6DB74;">"#/definitions/Postcode"</span>},},
+   <span style="color: #E6DB74;">"type"</span>: <span style="color: #E6DB74;">"object"</span>,
+   <span style="color: #E6DB74;">"required"</span>: [<span style="color: #E6DB74;">"sub-building-name"</span>, <span style="color: #E6DB74;">"building-name"</span>, <span style="color: #E6DB74;">"building-number"</span>, ...],
+   <span style="color: #E6DB74;">"title"</span>: <span style="color: #E6DB74;">"Paf"</span>,
+   <span style="color: #E6DB74;">"description"</span>: <span style="color: #E6DB74;">"PAF Format. The Postcode Address File (PAF) is a ..."</span>,
+   <span style="color: #E6DB74;">"$schema"</span>:<span style="color: #E6DB74;">"http://...com/uswitch/spec/address/paf"</span>},
+ <span style="color: #E6DB74;">"definitions"</span>: {
+   <span style="color: #E6DB74;">"Postcode"</span>: {<span style="color: #E6DB74;">"type"</span>:  <span style="color: #E6DB74;">"string"</span>,
+                <span style="color: #E6DB74;">"title"</span>: <span style="color: #E6DB74;">"Postcode"</span>,
+                <span style="color: #E6DB74;">"description"</span>: <span style="color: #E6DB74;">"A postcode is a series of letters ..."</span>}}}
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>add enough vocab</li>
+<li>rich json docs</li>
+<li>spit to s3 -&gt; ruby program</li>
+<li>json schema validation lib</li>
+<li>interface between clj &amp; rb speaks json</li>
+
+<li>So that's the client taken care of</li>
+<li>how can we protect our APIs?</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgfbda6dc">
+<h2 id="orgfbda6dc">Request</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #F92672;">def</span> <span style="color: #FD971F;">uuid-conformer</span>
+  <span style="color: #666666;">(</span><span style="color: #F92672;">letfn</span> [<span style="color: #666666;">(</span>coercer [x]
+            <span style="color: #666666;">(</span><span style="color: #F92672;">try</span>
+              <span style="color: #666666;">(</span><span style="color: #66D9EF;">java.util.UUID</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">fromString</span> x<span style="color: #666666;">)</span>
+              <span style="color: #666666;">(</span><span style="color: #F92672;">catch</span> <span style="color: #66D9EF;">Throwable</span> _ x<span style="color: #666666;">)))</span> 
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>conformer <span style="color: #666666;">(</span>comp uuid? coercer<span style="color: #666666;">)</span> str<span style="color: #666666;">)))</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">:route-params/id</span> uuid-conformer<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::route-params</span>
+  <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">route-params</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">id</span>]<span style="color: #666666;">))</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">:query-params/other-id</span> uuid-conformer<span style="color: #666666;">)</span>
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::query-params</span>
+  <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">query-params</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">other-id</span>]<span style="color: #666666;">))</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::request</span>
+  <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">::route-params</span> <span style="color: #AE81FF;">::query-params</span>]<span style="color: #666666;">))</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>spec the parts of a ring request</li>
+<li>request parameters</li>
+<li>param-spec use conformer-spec</li>
+<li>param coercion</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgadeffe5">
+<h2 id="orgadeffe5">Response</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::response</span>
+  <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>or <span style="color: #AE81FF;">:200</span>
+        <span style="color: #666666;">(</span>doc <span style="color: #E6DB74;">"List of addresses"</span>
+          <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">success</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">status</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">success</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">headers</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">success</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">body</span>]<span style="color: #666666;">))</span>
+
+        <span style="color: #AE81FF;">:400</span>
+        <span style="color: #666666;">(</span>doc <span style="color: #E6DB74;">"Bad Request. The postcode is malformed."</span>
+          <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">error</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">status</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">error</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">headers</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">error</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">body</span>]<span style="color: #666666;">))</span>
+
+        <span style="color: #AE81FF;">:406</span>
+        <span style="color: #666666;">(</span>doc <span style="color: #E6DB74;">"Not Acceptable. The requested resource is</span>
+<span style="color: #E6DB74;">              capable of generating only content not acceptable</span>
+<span style="color: #E6DB74;">              according to the Accept headers sent in the request."</span>
+          <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">error</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">status</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">error</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">headers</span> <span style="color: #AE81FF;">:</span><span style="color: #66D9EF;">error</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #AE81FF;">body</span>]<span style="color: #666666;">))</span>
+
+        ...<span style="color: #666666;">))</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>RESTful API</li>
+<li>responses = domain models</li>
+<li>wrapped in ring response</li>
+<li>response is going to be one or more type of response</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orga258e89">
+<h2 id="orga258e89">Request Handler</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">request-handler</span>
+  <span style="color: #666666;">(</span>doc <span style="color: #E6DB74;">"Returns rate-card identified by id, given a market-id"</span>
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>fspec 
+      <span style="color: #AE81FF;">:args</span> <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>cat <span style="color: #AE81FF;">:request</span> <span style="color: #AE81FF;">::request</span><span style="color: #666666;">)</span>
+      <span style="color: #AE81FF;">:ret</span> <span style="color: #AE81FF;">::response</span><span style="color: #666666;">)))</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>request-handler = input request, output response</li>
+<li>c.s fspec is a spec to define a fns in &amp; output</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgffc36ec">
+<h2 id="orgffc36ec">Instrument</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span>require '[<span style="color: #66D9EF;">clojure.spec.test</span> <span style="color: #AE81FF;">:as</span> t]<span style="color: #666666;">)</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>fdef <span style="color: #66D9EF;">db</span><span style="color: #F8F8F2; background-color: #111111;">/</span>some-query
+  <span style="color: #AE81FF;">:args</span> <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>cat <span style="color: #AE81FF;">:id</span> <span style="color: #AE81FF;">::id</span><span style="color: #666666;">)</span>
+  <span style="color: #AE81FF;">:ret</span> <span style="color: #AE81FF;">::database-row</span><span style="color: #666666;">)</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">t</span><span style="color: #F8F8F2; background-color: #111111;">/</span>instrument `<span style="color: #66D9EF;">db</span><span style="color: #F8F8F2; background-color: #111111;">/</span>some-query {<span style="color: #AE81FF;">:stub</span> #{`<span style="color: #66D9EF;">db</span><span style="color: #F8F8F2; background-color: #111111;">/</span>some-query}}<span style="color: #666666;">)</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">t</span><span style="color: #F8F8F2; background-color: #111111;">/</span>instrument `request-handler<span style="color: #666666;">)</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">t</span><span style="color: #F8F8F2; background-color: #111111;">/</span>check `request-handler<span style="color: #666666;">)</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>use these specs</li>
+<li>enforce boundary shape &amp; type of data that comes out request-handlers</li>
+<li>assert reqs &amp; responses conform</li>
+<li>instrument request-handlers &amp; data producers</li>
+<li>test.check to drive tests</li>
+<li>Generative testing is now <i>that</i> simple.</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgad6d772">
+<h2 id="orgad6d772">Is that enough value yet?</h2>
+<aside class="notes">
+<ul>
+<li>is that enough value yet?</li>
+<li>spent effort - specced every inch of ds</li>
+<li>enough value to justify?</li>
+<li>probably, but there's more.</li>
+<li>Use specs to derive a data transformation function between 2 specs</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org4b3bc55" data-background="./images/mapping.jpg">
+<h2 id="org4b3bc55"></h2>
+<aside class="notes">
+<ul>
+<li>ASTs = detailed mapping of structure</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org8e02c31" data-background="./images/roadmap1.jpg">
+<h3 id="org8e02c31"></h3>
+<aside class="notes">
+<ul>
+<li>each tree = road map to each value</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgafd76e5" data-background="./images/simple-structure.jpg">
+<h3 id="orgafd76e5"></h3>
+<aside class="notes">
+<ul>
+<li>2 trees, leaves same,</li>
+<li>structure different</li>
+<li>use this mapping to derive a fn</li>
+<li>convert simple ds to different shape</li>
+<li>db row -&gt; nested map</li>
+
+<li>we've used this for api versions</li>
+<li>in simple responses</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgf9ff7ab">
+<h2 id="orgf9ff7ab">Unique</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure">{<span style="color: #AE81FF;">:col-a</span> 123
+ <span style="color: #AE81FF;">:col-b</span> <span style="color: #E6DB74;">"foo"</span>
+ <span style="color: #AE81FF;">:col-c</span> <span style="color: #E6DB74;">"bar"</span>
+ <span style="color: #AE81FF;">:col-d</span> 500.456}
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>uniquely identifiable</li>
+<li>db row, uniqueness in name</li>
+<li>pull out to hash map</li>
+<li>use to build up new structure</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org2d3130e">
+<h2 id="org2d3130e">Structure can define uniqueness</h2>
+<aside class="notes">
+<ul>
+<li>structural..</li>
+<li>uniqueness can be in path</li>
+
+<li>Sometimes not in name/path</li>
+<li>it's in the data itself</li>
+<li>it's in the type of the data</li>
+<li>what happens when data is complex?</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgebce175" data-background="./images/evolution.jpg">
+<h2 id="orgebce175">Evolution of Data Structures</h2>
+<aside class="notes">
+<ul>
+<li>lots of different complex data structures</li>
+<li>evolved, lack of constraints</li>
+<li>small &amp; neat</li>
+<li>monstrous.</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orgf26ee6e">
+<h2 id="orgf26ee6e">Complex data structures</h2>
+<aside class="notes">
+<ul>
+<li>interesting features</li>
+<li>html, sum types, built-in compression</li>
+
+<li>name &amp; structure starts to break down</li>
+<li>human can tell difference</li>
+<li>they can see the patterns in the data</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org868c37f" data-background="./images/roadmap1.jpg">
+<h3 id="org868c37f"></h3>
+<aside class="notes">
+<ul>
+<li>help program with</li>
+<li>increase vocabulary again</li>
+<li>instruct fn which fork in road to take</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org25db3a5">
+<h2 id="org25db3a5">categorize</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span>categorize <span style="color: #AE81FF;">::tariff</span>
+  <span style="color: #AE81FF;">:fuel</span>         <span style="color: #666666;">(</span><span style="color: #F92672;">fn</span> [value] <span style="color: #666666;">(</span>get-in value [<span style="color: #AE81FF;">:meter</span> <span style="color: #AE81FF;">:fuel</span>]<span style="color: #666666;">))</span>
+  <span style="color: #AE81FF;">:payment-type</span> <span style="color: #666666;">(</span><span style="color: #F92672;">fn</span> [value] <span style="color: #666666;">(</span><span style="color: #AE81FF;">:payment-type</span> value<span style="color: #666666;">))))</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>this is a categorize spec</li>
+<li>tells us how leaf value are different</li>
+<li>categorised by fuel and payment type</li>
+<li>these functions called on data tell you the type</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgffb5b5d" data-background="./images/disjoint-typed-subtree.jpg">
+<h3 id="orgffb5b5d"></h3>
+<aside class="notes">
+<ul>
+<li>every leaf value down should be categorized</li>
+<li>flattening each subtree into a set</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org44b30c8" data-background="./images/disjoint-set-1.jpg">
+<h3 id="org44b30c8"></h3>
+<aside class="notes">
+<ul>
+<li>if we did this to all the subtrees</li>
+<li>union of all these sets - disjoint</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org8681501" data-background="./images/disjoint-set-2.jpg">
+<h3 id="org8681501"></h3>
+<aside class="notes">
+<ul>
+<li>not lost information to build it back up</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-orga0155c9" data-background="./images/disjoint-typed-subtree.jpg">
+<h3 id="orga0155c9"></h3>
+<aside class="notes">
+<ul>
+<li>when we do build back up</li>
+<li>categorize = less about classification</li>
+<li>that's already done - set is disjoint</li>
+<li>more about branching point</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org152ee28">
+<h3 id="org152ee28">re-categorize</h3>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span>categorize <span style="color: #AE81FF;">::tariff</span>
+  <span style="color: #AE81FF;">:fuel</span>         <span style="color: #666666;">(</span><span style="color: #F92672;">fn</span> [value] <span style="color: #666666;">(</span>get-in value [<span style="color: #AE81FF;">:meter</span> <span style="color: #AE81FF;">:fuel</span>]<span style="color: #666666;">))</span>
+  <span style="color: #AE81FF;">:payment-type</span> <span style="color: #666666;">(</span><span style="color: #F92672;">fn</span> [value] <span style="color: #666666;">(</span><span style="color: #AE81FF;">:payment-type</span> value<span style="color: #666666;">))))</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>more about branching point</li>
+<li>where set needs to be split, by what</li>
+<li>same vocab - if possible, transform in both directions</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org9faf52f">
+<h2 id="org9faf52f">select</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::electricity</span>
+  <span style="color: #666666;">(</span>select
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">::variant</span> <span style="color: #AE81FF;">::rates</span> <span style="color: #AE81FF;">::standing-charge</span>]<span style="color: #666666;">)</span>
+    <span style="color: #AE81FF;">:fuel</span> #{<span style="color: #E6DB74;">"Electricity"</span>}<span style="color: #666666;">)</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">::gas</span>
+  <span style="color: #666666;">(</span>select
+    <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>keys <span style="color: #AE81FF;">:req-un</span> [<span style="color: #AE81FF;">::variant</span> <span style="color: #AE81FF;">::rates</span> <span style="color: #AE81FF;">::standing-charge</span>]<span style="color: #666666;">)</span>
+    <span style="color: #AE81FF;">:fuel</span> #{<span style="color: #E6DB74;">"Gas"</span>}<span style="color: #666666;">)</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>there's another addition to the vocabulary</li>
+<li>tell fn which specific type of data goes down branch</li>
+<li>if we can express this = transform more types</li>
+<li>key elec = data tagged elec</li>
+<li>key gas = data tagged gas</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgb09e5e1">
+<h2 id="orgb09e5e1">How far can we go?</h2>
+<ul>
+<li class="fragment appear">API responses</li>
+<li class="fragment appear">Complex 1MB documents</li>
+<li class="fragment appear">Slimmed down version</li>
+<li class="fragment appear">Each categorised element split.</li>
+
+</ul>
+<aside class="notes">
+<ul>
+<li>using this vocab</li>
+<li>transform complex API responses between versions and formats</li>
+<li>transform quite large 1MB documents into slimmed down versions</li>
+<li>each categorised element split out</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-org2c4e007" data-background="./images/extract.jpg">
+<h2 id="org2c4e007"></h2>
+<aside class="notes">
+<ul>
+<li>same techniques to extract</li>
+<li>extract is a transform - throw away data</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org795de51">
+<h2 id="org795de51">Extract</h2>
+<div class="org-src-container">
+
+<pre  class="src src-clojure"><span style="color: #666666;">(</span><span style="color: #F92672;">defn</span> <span style="color: #A6E22E;">some-pricing-function</span> [vat rates]
+  <span style="color: #75715E;">;; </span><span style="color: #75715E; background-color: #111111;">...</span>
+  <span style="color: #666666;">)</span>
+
+<span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>fspec some-pricing-function
+  <span style="color: #AE81FF;">:args</span> <span style="color: #666666;">(</span><span style="color: #66D9EF;">s</span><span style="color: #F8F8F2; background-color: #111111;">/</span>cat <span style="color: #AE81FF;">:vat</span> <span style="color: #AE81FF;">::vat</span> <span style="color: #AE81FF;">:rates</span> <span style="color: #AE81FF;">::rates</span><span style="color: #666666;">)</span>
+  <span style="color: #AE81FF;">:ret</span>  decimal?<span style="color: #666666;">))</span>
+
+<span style="color: #666666;">(</span>x-apply some-pricing-function giant-data-structure<span style="color: #666666;">)</span>
+</pre>
+</div>
+<aside class="notes">
+<ul>
+<li>work out what data fns need from fspec</li>
+<li>different calling convention</li>
+<li>extraction done for us</li>
+<li>e.g. this function needs vat and rates</li>
+<li>giant-data-structure</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orgb55d166">
+<h2 id="orgb55d166">Speculate</h2>
+<p>
+<a href="https://github.com/uswitch/speculate">https://github.com/uswitch/speculate</a>
+</p>
+<aside class="notes">
+<ul>
+<li>extract most ideas into lib</li>
+<li>called speculate</li>
+<li>work to do</li>
+<li>algo not optimal</li>
+<li>experimental, likely to change, but works for us</li>
+<li>in production in some APIs &amp; services</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org1a2d98f">
+<h2 id="org1a2d98f"></h2>
+<aside class="notes">
+<ul>
+<li>not sure we'll be in a place where</li>
+<li>stop creating services &amp; ds</li>
+<li>ds must change, network, business requirements</li>
+<li>in a place where dealing with this is simpler</li>
+<li>it's less painful.</li>
+<li>it doesn't hurt</li>
+<li>we just write the specs</li>
+<li>at least in our clojure code</li>
+<li>I think all this effort is worth it.</li>
+<li>Because you <b>can</b> use them to reduce all that repetition.</li>
+
+</ul>
+
+</aside>
+</section>
+</section>
+<section>
+<section id="slide-org4123e67">
+<h2 id="org4123e67">Thanks :)</h2>
+<p>
+@andrewmcveigh
+<a href="https://github.com/andrewmcveigh/speculative-development">https://github.com/andrewmcveigh/speculative-development</a>
+</p>
+</section>
+</section>
+</div>
+</div>
+<script src="file:///home/andrewmcveigh/code/reveal.js/lib/js/head.min.js"></script>
+<script src="file:///home/andrewmcveigh/code/reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+margin: 0.00,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+{ src: 'file:///home/andrewmcveigh/notes/speculative-development/js/override.js' },
+ { src: 'file:///home/andrewmcveigh/code/reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'file:///home/andrewmcveigh/code/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'file:///home/andrewmcveigh/code/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'file:///home/andrewmcveigh/code/reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'file:///home/andrewmcveigh/code/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>
